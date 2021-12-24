@@ -93,7 +93,7 @@ export default {
     return {
       activeIndex: "1",
       school: "SustechOJ",
-      loginshow: 1,
+      loginshow: sessionStorage.username,
       username: sessionStorage.username,
       isadmin: true
     };

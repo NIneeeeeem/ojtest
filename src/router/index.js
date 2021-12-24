@@ -21,7 +21,7 @@ import wa from "../components/problem/wa";
 import ce from "../components/problem/ce";
 import mle from "../components/problem/mle";
 import setting from "../components/utils/setting";
-import test from "../components/teacher/teacherproblem/test";
+
 
 
 Vue.use(Router)
@@ -141,11 +141,7 @@ export default new Router({
           name: 'createproblem',
           component: createproblem,
         },
-        {
-          path: '/test',
-          name: 'test',
-          component: test,
-        },
+
         ]
 
     }

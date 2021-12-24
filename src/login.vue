@@ -56,6 +56,7 @@ export default {
             message: "登录成功！",
             type: "success"
           });
+          this.$router.go(0);
           sessionStorage.setItem("username", this.form.username);
           sessionStorage.setItem("type", response.data.type);
           this.dialogLoginVisible = false;

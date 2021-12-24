@@ -162,17 +162,43 @@
       </el-form>
     </el-dialog>
 
+    <el-dialog :title="title" :visible.sync="openn" width="700px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+        <el-form-item label="上传测试文件" prop="uploadFile">
+          <el-upload
+            name="uploadFile"
+            ref="upload"
+            :data="form"
+            :headers="headers"
+            :auto-upload="false"
+            :limit=limitNum
+            accept=".png,.jpg,.pdf,.doc,.docx,.txt,.xls,.xlsx"
+            :on-exceed="exceedFile"
+            :on-change="handleChange"
+            :on-remove="handleRemove"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+            :before-upload="beforeUploadFile"
+            action="/dev-api/data/file/fileUpload"
+            v-hasPermi="['data:file:fileUpload']"
+            :file-list="fileList"
+            multiple="true"
+            show-file-list="true">
+            <el-button size="small" type="primary">选择附件</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">上 传</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-export function addFile(FormData) {
-  return request({
-    url: '/data/file/fileUpload',//路径自己调整
-    method: 'post',
-    data: FormData,
-  })
-}
+import { getToken } from './auth';
 
 export default {
   name: "createproblem",
@@ -206,11 +232,21 @@ export default {
         sampleoutput1:'',
         sampleoutput2:'',
       },
+
+      headers:{
+        "Authorization":'Bearer ' + getToken()
+      },
+      limitNum: 10,
+      fileList:[],
+      openn:false,
+      token:{
+        accessToken:''
+      },
     }
 
   },
   methods: {
-
+// 文件超出个数限制时的钩子
     exceedFile(files, fileList) {
       this.$message({
         message: '只能选择 ${this.limitNum} 个文件，当前共选择了 ${files.length + fileList.length} 个',
@@ -256,7 +292,7 @@ export default {
 
     // 文件上传成功时的钩子
     handleSuccess(res, file, fileList) {
-      this.open = false;
+      this.openn = true;
       this.getList();
       this.$message({
         type: 'danger',
@@ -273,43 +309,9 @@ export default {
     },
 
     /** 提交按钮 */
+    submitForm: function() {
+      this.$refs.upload.submit()
 
-    submitForm(form) {
-      this.$refs.form.validate( valid => {
-        if (valid) {
-          var upData = new FormData() // 首先创建FormData对象
-          this.$refs.upload.submit() // 这里是执行文件上传的函数，其实也就是获取我们要上传的文件
-          this.fileList.forEach(function (file) {
-            upData.append('uploadFile', file, file.name); // 因为要上传多个文件，所以需要遍历一下才行
-            // upData.append('file', this.file); 不要直接使用我们的文件数组进行上传，你会发现传给后台的是两个Object
-          })
-          //遍历表单中的其他参数
-          for(let key in this.form){
-            upData.append(key,this.form[key])
-          }
-          //同理: 将每个参数都进行一次此操作 upData.appen(表单参数,form.表单参数)
-
-          //接口调用
-          addFile(upData).then(response => {
-            if (response.code === 200) {
-              this.msgSuccess("上传成功！");
-              this.$refs.upload.clearFiles();		//清空，同this.fileList=[]
-              this.open = false;
-              this.getList();
-            }else{
-              this.msgError("上传失败！");
-              this.open = false;
-              this.fileList = [] // 阻止上传的文件被重复添加，所以清空掉
-            }
-          })
-        }
-      })
-    },
-
-    // 自定义的上传函数
-    httpRequest(param) {
-      // 一般情况下是在这里创建FormData对象，但我们需要上传多个文件，为避免发送多次请求，因此在这里只进行文件的获取，param可以拿到文件上传的所有信息
-      this.fileList.push(param.file)
     },
 
 
@@ -319,7 +321,7 @@ export default {
       this.givetag = true;
     },
     addinandout() {
-      this.giveinandout = true;
+      this.openn = true;
     },
     addsimple() {
       this.givesimple = true;
